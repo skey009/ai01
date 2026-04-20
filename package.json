@@ -1,0 +1,9 @@
+{
+  "name": "ai-trading-web-admin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web Admin prototype for the AI trading system core module.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
