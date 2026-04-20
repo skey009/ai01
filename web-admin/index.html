@@ -17,6 +17,7 @@
         <nav class="nav-list">
           <a href="#overview">总览</a>
           <a href="#accounts">账户切换</a>
+          <a href="#credentials">密钥设置</a>
           <a href="#strategy">策略开关</a>
           <a href="#risk">风控配置</a>
           <a href="#logs">日志监控</a>
@@ -24,7 +25,7 @@
         </nav>
         <div class="sidebar-note">
           <strong>安全约束</strong>
-          <p>仅提供模拟查看与人工干预流程，不执行真实交易。</p>
+          <p>当前版本只保存 API 配置并展示模拟数据，不执行真实交易。</p>
         </div>
       </aside>
 
@@ -34,7 +35,7 @@
             <span class="eyebrow">Admin Control Center</span>
             <h2>统一管理 Binance / OKX 账户、策略与风控</h2>
             <p>
-              支持多账户切换、余额与订单查看、策略开关、风控参数配置、日志监控以及手动干预操作。
+              支持多账户切换、API 密钥设置、余额与订单查看、策略开关、风控配置、日志监控以及手动干预操作。
             </p>
           </div>
           <div class="hero-stats" id="heroStats"></div>
@@ -64,6 +65,54 @@
                 <div id="orderList" class="order-list"></div>
               </div>
             </div>
+          </article>
+
+          <article class="panel" id="credentials">
+            <div class="panel-header">
+              <div>
+                <span class="panel-tag">Credentials</span>
+                <h3>交易所 API 密钥设置</h3>
+              </div>
+            </div>
+            <form id="credentialsForm" class="form-grid credentials-grid">
+              <label>
+                账户名称
+                <input type="text" name="name" placeholder="例如 Binance Alpha" required />
+              </label>
+              <label>
+                负责人
+                <input type="text" name="owner" placeholder="例如 Primary Desk" required />
+              </label>
+              <label>
+                交易所
+                <select name="exchange">
+                  <option value="Binance">Binance</option>
+                  <option value="OKX">OKX</option>
+                </select>
+              </label>
+              <label>
+                健康状态
+                <input type="text" name="health" placeholder="例如 在线" required />
+              </label>
+              <label>
+                API Key
+                <input type="text" name="apiKey" placeholder="请输入 API Key" required />
+              </label>
+              <label>
+                API Secret
+                <input type="password" name="apiSecret" placeholder="请输入 API Secret" required />
+              </label>
+              <label>
+                Passphrase
+                <input type="password" name="passphrase" placeholder="OKX 可填写 Passphrase" />
+              </label>
+              <label>
+                备注
+                <input type="text" name="note" placeholder="可选，例如只读 / 交易权限" />
+              </label>
+              <button type="submit" class="primary-btn">保存密钥配置</button>
+            </form>
+            <div class="helper-copy" id="credentialsHint"></div>
           </article>
 
           <article class="panel" id="strategy">

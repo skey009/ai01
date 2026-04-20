@@ -324,10 +324,19 @@ input {
   margin-top: 16px;
 }
 
+.credentials-grid {
+  margin-bottom: 12px;
+}
+
 .form-grid label {
   display: grid;
   gap: 8px;
   color: var(--muted);
+}
+
+.helper-copy {
+  color: var(--muted);
+  font-size: 0.92rem;
 }
 
 .primary-btn,

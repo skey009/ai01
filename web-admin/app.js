@@ -1,79 +1,13 @@
 const state = {
   selectedAccountId: "binance-main",
   logFilter: "ALL",
-  accounts: [
-    {
-      id: "binance-main",
-      name: "Binance Alpha",
-      exchange: "Binance",
-      owner: "Primary Desk",
-      apiKey: "BNZ-9A1D-32F0-XXXX",
-      health: "在线",
-      balances: [
-        { asset: "USDT", total: "128,340.22", available: "96,210.17" },
-        { asset: "BTC", total: "2.4800", available: "1.9100" },
-        { asset: "ETH", total: "18.6300", available: "14.3000" },
-      ],
-      orders: [
-        { symbol: "BTC/USDT", side: "BUY", type: "LIMIT", status: "OPEN" },
-        { symbol: "ETH/USDT", side: "SELL", type: "MARKET", status: "FILLED" },
-        { symbol: "SOL/USDT", side: "BUY", type: "LIMIT", status: "PARTIAL" },
-      ],
-      strategies: [
-        { id: "vwap", name: "VWAP Breakout", enabled: true, confidence: 0.82, mode: "AUTO" },
-        { id: "rsi", name: "RSI Mean Reversion", enabled: false, confidence: 0.61, mode: "PAPER" },
-        { id: "ai", name: "LLM Signal Overlay", enabled: true, confidence: 0.76, mode: "ASSIST" },
-      ],
-      risk: {
-        positionLimit: 35,
-        riskPerTrade: 1.2,
-        stopLoss: 2.4,
-        takeProfit: 5.8,
-        circuitBreakerLosses: 3,
-        apiRateLimit: 120,
-      },
-    },
-    {
-      id: "okx-hedge",
-      name: "OKX Hedge",
-      exchange: "OKX",
-      owner: "Hedge Desk",
-      apiKey: "OKX-77D2-61BA-XXXX",
-      health: "延迟可控",
-      balances: [
-        { asset: "USDT", total: "86,920.11", available: "52,410.55" },
-        { asset: "BTC", total: "1.3500", available: "0.8300" },
-        { asset: "ARB", total: "12,540.00", available: "11,800.00" },
-      ],
-      orders: [
-        { symbol: "BTC/USDT", side: "SELL", type: "LIMIT", status: "OPEN" },
-        { symbol: "ARB/USDT", side: "BUY", type: "MARKET", status: "FILLED" },
-        { symbol: "ETH/USDT", side: "SELL", type: "STOP", status: "PENDING" },
-      ],
-      strategies: [
-        { id: "trend", name: "Trend Capture", enabled: true, confidence: 0.69, mode: "AUTO" },
-        { id: "basis", name: "Basis Spread", enabled: true, confidence: 0.72, mode: "SEMI" },
-        { id: "ai", name: "LLM Signal Overlay", enabled: false, confidence: 0.53, mode: "OFF" },
-      ],
-      risk: {
-        positionLimit: 24,
-        riskPerTrade: 0.8,
-        stopLoss: 1.6,
-        takeProfit: 4.2,
-        circuitBreakerLosses: 2,
-        apiRateLimit: 90,
-      },
-    },
-  ],
+  accounts: [],
   logs: [
-    { level: "INFO", time: "19:00:12", message: "Binance Alpha 余额同步完成" },
-    { level: "WARN", time: "19:01:36", message: "OKX Hedge API 延迟升高，已进入重试窗口" },
-    { level: "INFO", time: "19:02:18", message: "VWAP Breakout 信号通过风控检查" },
-    { level: "ERROR", time: "19:03:44", message: "ETH/USDT 止损委托失败，已记录待人工复核" },
-    { level: "INFO", time: "19:05:21", message: "人工干预队列待处理 1 项" },
+    { level: "INFO", time: "19:00:12", message: "后台系统已启动，当前为本地演示模式" },
+    { level: "INFO", time: "19:01:30", message: "可在“密钥设置”区域保存 Binance / OKX API 配置" },
   ],
   interventions: [
-    { time: "18:48:09", title: "系统初始化", detail: "后台系统载入完成，当前为模拟演示模式。" },
+    { time: "18:48:09", title: "系统初始化", detail: "后台系统载入完成，尚未执行任何真实交易请求。" },
   ],
 };
 
@@ -83,6 +17,8 @@ const refs = {
   accountCard: document.getElementById("accountCard"),
   balanceList: document.getElementById("balanceList"),
   orderList: document.getElementById("orderList"),
+  credentialsForm: document.getElementById("credentialsForm"),
+  credentialsHint: document.getElementById("credentialsHint"),
   strategyList: document.getElementById("strategyList"),
   riskForm: document.getElementById("riskForm"),
   logFilter: document.getElementById("logFilter"),
@@ -91,21 +27,44 @@ const refs = {
   toast: document.getElementById("toast"),
 };
 
+function maskSecret(value) {
+  if (!value) {
+    return "未设置";
+  }
+
+  if (value.length <= 8) {
+    return `${value.slice(0, 2)}***${value.slice(-1)}`;
+  }
+
+  return `${value.slice(0, 4)}****${value.slice(-4)}`;
+}
+
 function getCurrentAccount() {
-  return state.accounts.find((account) => account.id === state.selectedAccountId);
+  return state.accounts.find((account) => account.id === state.selectedAccountId) || state.accounts[0];
+}
+
+function pushLog(level, message) {
+  state.logs.unshift({
+    level,
+    time: new Date().toLocaleTimeString("zh-CN", { hour12: false }),
+    message,
+  });
+  renderLogs();
+  renderHero();
 }
 
 function renderHero() {
+  const account = getCurrentAccount();
   const totalAccounts = state.accounts.length;
-  const totalStrategies = getCurrentAccount().strategies.filter((item) => item.enabled).length;
+  const totalStrategies = account ? account.strategies.filter((item) => item.enabled).length : 0;
   const warnCount = state.logs.filter((item) => item.level !== "INFO").length;
-  const openOrders = getCurrentAccount().orders.filter((item) => item.status === "OPEN").length;
+  const configuredCount = state.accounts.filter((item) => item.credentials && item.credentials.apiKey).length;
 
   refs.heroStats.innerHTML = [
     { label: "已接入账户", value: totalAccounts },
+    { label: "已配置密钥", value: configuredCount },
     { label: "启用策略", value: totalStrategies },
     { label: "风险告警", value: warnCount },
-    { label: "当前挂单", value: openOrders },
   ]
     .map(
       (item) => `
@@ -121,16 +80,20 @@ function renderHero() {
 function renderAccountSelect() {
   refs.accountSelect.innerHTML = state.accounts
     .map(
-      (account) =>
-        `<option value="${account.id}" ${account.id === state.selectedAccountId ? "selected" : ""}>
+      (account) => `
+        <option value="${account.id}" ${account.id === state.selectedAccountId ? "selected" : ""}>
           ${account.exchange} · ${account.name}
-        </option>`
+        </option>
+      `
     )
     .join("");
 }
 
 function renderAccountDetails() {
   const account = getCurrentAccount();
+  if (!account) {
+    return;
+  }
 
   refs.accountCard.innerHTML = `
     <div class="section-head">
@@ -140,7 +103,10 @@ function renderAccountDetails() {
       </div>
       <span class="badge">${account.health}</span>
     </div>
-    <p>API Key: ${account.apiKey}</p>
+    <p>API Key: ${account.credentials?.maskedKey || "未设置"}</p>
+    <p>Secret: ${account.credentials?.maskedSecret || "未设置"}</p>
+    <p>Passphrase: ${account.credentials?.maskedPassphrase || "未设置"}</p>
+    <p>备注: ${account.credentials?.note || "无"}</p>
   `;
 
   refs.balanceList.innerHTML = account.balances
@@ -172,6 +138,26 @@ function renderAccountDetails() {
     .join("");
 }
 
+function renderCredentialForm() {
+  const account = getCurrentAccount();
+  if (!account) {
+    return;
+  }
+
+  refs.credentialsForm.elements.name.value = account.name || "";
+  refs.credentialsForm.elements.owner.value = account.owner || "";
+  refs.credentialsForm.elements.exchange.value = account.exchange || "Binance";
+  refs.credentialsForm.elements.health.value = account.health || "";
+  refs.credentialsForm.elements.apiKey.value = account.credentials?.apiKey || "";
+  refs.credentialsForm.elements.apiSecret.value = account.credentials?.apiSecret || "";
+  refs.credentialsForm.elements.passphrase.value = account.credentials?.passphrase || "";
+  refs.credentialsForm.elements.note.value = account.credentials?.note || "";
+
+  refs.credentialsHint.textContent = account.credentials?.updatedAt
+    ? `最近保存时间：${account.credentials.updatedAt}`
+    : "尚未保存真实 API 密钥。填写后会保存在本地配置文件中。";
+}
+
 function renderStrategies() {
   const account = getCurrentAccount();
   refs.strategyList.innerHTML = account.strategies
@@ -201,7 +187,6 @@ function renderRiskForm() {
 
 function renderLogs() {
   const logs = state.logFilter === "ALL" ? state.logs : state.logs.filter((item) => item.level === state.logFilter);
-
   refs.logList.innerHTML = logs
     .map(
       (log) => `
@@ -258,11 +243,66 @@ function addIntervention(title, detail) {
   renderInterventions();
 }
 
+async function requestJson(url, options) {
+  const response = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: "请求失败" }));
+    throw new Error(error.error || "请求失败");
+  }
+
+  return response.json();
+}
+
+async function loadAccounts() {
+  const payload = await requestJson("/api/accounts");
+  state.accounts = payload.accounts.map((account) => ({
+    ...account,
+    credentials: {
+      ...account.credentials,
+      maskedKey: maskSecret(account.credentials?.apiKey),
+      maskedSecret: maskSecret(account.credentials?.apiSecret),
+      maskedPassphrase: maskSecret(account.credentials?.passphrase),
+    },
+  }));
+
+  if (!state.accounts.some((account) => account.id === state.selectedAccountId)) {
+    state.selectedAccountId = state.accounts[0]?.id || "";
+  }
+}
+
 function attachEvents() {
   refs.accountSelect.addEventListener("change", (event) => {
     state.selectedAccountId = event.target.value;
     renderAll();
     showToast("账户已切换");
+  });
+
+  refs.credentialsForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const account = getCurrentAccount();
+    const formData = new FormData(refs.credentialsForm);
+    const payload = Object.fromEntries(formData.entries());
+
+    try {
+      await requestJson(`/api/accounts/${account.id}/credentials`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      await loadAccounts();
+      renderAll();
+      pushLog("INFO", `${payload.exchange} 账户 ${payload.name} 的 API 配置已保存`);
+      showToast("密钥配置已保存");
+    } catch (error) {
+      pushLog("ERROR", `保存 API 配置失败：${error.message}`);
+      showToast(error.message);
+    }
   });
 
   refs.strategyList.addEventListener("change", (event) => {
@@ -275,14 +315,7 @@ function attachEvents() {
     strategy.enabled = event.target.checked;
 
     const actionText = strategy.enabled ? "启用" : "停用";
-    state.logs.unshift({
-      level: "INFO",
-      time: new Date().toLocaleTimeString("zh-CN", { hour12: false }),
-      message: `${account.name} ${actionText}策略 ${strategy.name}`,
-    });
-
-    renderHero();
-    renderLogs();
+    pushLog("INFO", `${account.name} ${actionText}策略 ${strategy.name}`);
     showToast(`已${actionText}${strategy.name}`);
   });
 
@@ -295,13 +328,7 @@ function attachEvents() {
       risk[key] = Number(value);
     }
 
-    state.logs.unshift({
-      level: "WARN",
-      time: new Date().toLocaleTimeString("zh-CN", { hour12: false }),
-      message: `${getCurrentAccount().name} 风控配置被人工更新`,
-    });
-
-    renderLogs();
+    pushLog("WARN", `${getCurrentAccount().name} 风控配置被人工更新`);
     showToast("风控配置已保存");
   });
 
@@ -344,12 +371,7 @@ function handleIntervention(action) {
 
   const selected = actionMap[action];
   addIntervention(selected.title, selected.detail);
-  state.logs.unshift({
-    level: "WARN",
-    time: new Date().toLocaleTimeString("zh-CN", { hour12: false }),
-    message: `${account.name} 执行手动干预：${selected.title}`,
-  });
-  renderLogs();
+  pushLog("WARN", `${account.name} 执行手动干预：${selected.title}`);
   showToast(selected.toast);
 }
 
@@ -357,11 +379,22 @@ function renderAll() {
   renderHero();
   renderAccountSelect();
   renderAccountDetails();
+  renderCredentialForm();
   renderStrategies();
   renderRiskForm();
   renderLogs();
   renderInterventions();
 }
 
-renderAll();
-attachEvents();
+async function bootstrap() {
+  try {
+    await loadAccounts();
+    renderAll();
+    attachEvents();
+  } catch (error) {
+    refs.toast.textContent = `初始化失败：${error.message}`;
+    refs.toast.classList.add("show");
+  }
+}
+
+bootstrap();
