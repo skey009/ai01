@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>风控配置</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="risk">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-kicker">Risk</span><h1>风控配置</h1><p>管理风险参数</p></div>
+        <nav class="nav-list">
+          <a href="./index.html">总览</a><a href="./market.html">Market Data</a><a href="./signal.html">Strategy Engine</a><a href="./accounts.html">账户切换</a><a href="./credentials.html">密钥设置</a><a href="./strategy.html">策略开关</a><a href="./risk.html">风控配置</a><a href="./logs.html">日志监控</a><a href="./intervene.html">手动干预</a>
+        </nav>
+      </aside>
+      <main class="main-content">
+        <section class="hero"><div><span class="eyebrow">Risk</span><h2>风控配置页面</h2><p>单独调整仓位、止损、止盈、熔断和 API 限频。</p></div><div class="hero-stats" id="heroStats"></div></section>
+        <section class="panel-grid">
+          <article class="panel panel-wide">
+            <div class="panel-header"><div><span class="panel-tag">Risk</span><h3>风控参数</h3></div><select id="accountSelect" aria-label="切换账户"></select></div>
+            <form id="riskForm" class="form-grid">
+              <label>最大仓位<input type="number" step="0.1" name="positionLimit" /></label>
+              <label>单笔风险 %<input type="number" step="0.1" name="riskPerTrade" /></label>
+              <label>止损 %<input type="number" step="0.1" name="stopLoss" /></label>
+              <label>止盈 %<input type="number" step="0.1" name="takeProfit" /></label>
+              <label>熔断阈值<input type="number" step="1" name="circuitBreakerLosses" /></label>
+              <label>API 限频 / min<input type="number" step="1" name="apiRateLimit" /></label>
+              <button type="submit" class="primary-btn">保存风控配置</button>
+            </form>
+          </article>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

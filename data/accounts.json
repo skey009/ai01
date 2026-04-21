@@ -2,17 +2,17 @@
   "accounts": [
     {
       "id": "binance-main",
-      "name": "Binance Alpha",
-      "exchange": "Binance",
+      "name": "OKX1",
+      "exchange": "OKX",
       "owner": "Primary Desk",
       "health": "??",
       "note": "默认演示账户",
       "credentials": {
-        "apiKey": "",
-        "apiSecret": "",
-        "passphrase": "",
+        "apiKey": "f5c5742e-602a-4773-a4e4-920f51676b11",
+        "apiSecret": "347429EF4491F4909EB3A88A884D08A9",
+        "passphrase": "yYY@123456",
         "note": "",
-        "updatedAt": ""
+        "updatedAt": "2026/4/21 12:31:44"
       },
       "balances": [
         {
@@ -72,6 +72,13 @@
           "enabled": true,
           "confidence": 0.76,
           "mode": "ASSIST"
+        },
+        {
+          "id": "sar",
+          "name": "SAR Trend Reversal",
+          "enabled": false,
+          "confidence": 0.67,
+          "mode": "AUTO"
         }
       ],
       "risk": {
@@ -155,6 +162,13 @@
           "enabled": false,
           "confidence": 0.53,
           "mode": "OFF"
+        },
+        {
+          "id": "sar",
+          "name": "SAR Trend Reversal",
+          "enabled": true,
+          "confidence": 0.64,
+          "mode": "SEMI"
         }
       ],
       "risk": {

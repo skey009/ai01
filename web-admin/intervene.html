@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>手动干预</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="intervene">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-kicker">Intervention</span><h1>手动干预</h1><p>人工操作与轨迹</p></div>
+        <nav class="nav-list">
+          <a href="./index.html">总览</a><a href="./market.html">Market Data</a><a href="./signal.html">Strategy Engine</a><a href="./accounts.html">账户切换</a><a href="./credentials.html">密钥设置</a><a href="./strategy.html">策略开关</a><a href="./risk.html">风控配置</a><a href="./logs.html">日志监控</a><a href="./intervene.html">手动干预</a>
+        </nav>
+      </aside>
+      <main class="main-content">
+        <section class="hero"><div><span class="eyebrow">Intervention</span><h2>手动干预页面</h2><p>单独执行暂停、撤单、降风险与模拟强平等操作。</p></div><div class="hero-stats" id="heroStats"></div></section>
+        <section class="panel-grid">
+          <article class="panel panel-wide">
+            <div class="panel-header"><div><span class="panel-tag">Intervention</span><h3>人工操作</h3></div><select id="accountSelect" aria-label="切换账户"></select></div>
+            <div class="intervention-grid">
+              <button class="action-btn" data-action="pause-all">暂停当前账户全部策略</button>
+              <button class="action-btn" data-action="cancel-open-orders">撤销当前账户全部挂单</button>
+              <button class="action-btn" data-action="reduce-risk">紧急下调风险参数</button>
+              <button class="action-btn" data-action="close-position">模拟强平高风险仓位</button>
+            </div>
+            <div class="timeline" id="interventionTimeline"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

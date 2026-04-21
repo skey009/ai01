@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Market Data</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="market">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-kicker">Module 01</span><h1>Market Data</h1><p>行情模块</p></div>
+        <nav class="nav-list">
+          <a href="./index.html">总览</a>
+          <a href="./market.html">Market Data</a>
+          <a href="./signal.html">Strategy Engine</a>
+          <a href="./accounts.html">账户切换</a>
+          <a href="./credentials.html">密钥设置</a>
+          <a href="./strategy.html">策略开关</a>
+          <a href="./risk.html">风控配置</a>
+          <a href="./logs.html">日志监控</a>
+          <a href="./intervene.html">手动干预</a>
+        </nav>
+      </aside>
+      <main class="main-content">
+        <section class="hero">
+          <div><span class="eyebrow">Module 01</span><h2>行情数据页面</h2><p>单独展示 K 线、深度、成交、WebSocket 实时流和 Redis 缓存状态。</p></div>
+          <div class="hero-stats" id="heroStats"></div>
+        </section>
+        <section class="panel-grid">
+          <article class="panel panel-wide">
+            <div class="panel-header">
+              <div><span class="panel-tag">Market</span><h3>实时行情</h3></div>
+              <div class="live-chip" id="streamStatus">实时通道连接中</div>
+            </div>
+            <div class="market-summary" id="marketSummary"></div>
+            <div class="triple-grid">
+              <div><div class="section-head"><h4>K 线快照</h4></div><div id="klineList" class="kline-list"></div></div>
+              <div><div class="section-head"><h4>深度</h4></div><div id="depthBook" class="depth-book"></div></div>
+              <div><div class="section-head"><h4>最近成交</h4></div><div id="tradeList" class="trade-list"></div></div>
+            </div>
+            <div class="cache-bar" id="cacheBar"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>日志监控</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="logs">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-kicker">Monitoring</span><h1>日志监控</h1><p>查看系统日志</p></div>
+        <nav class="nav-list">
+          <a href="./index.html">总览</a><a href="./market.html">Market Data</a><a href="./signal.html">Strategy Engine</a><a href="./accounts.html">账户切换</a><a href="./credentials.html">密钥设置</a><a href="./strategy.html">策略开关</a><a href="./risk.html">风控配置</a><a href="./logs.html">日志监控</a><a href="./intervene.html">手动干预</a>
+        </nav>
+      </aside>
+      <main class="main-content">
+        <section class="hero"><div><span class="eyebrow">Monitoring</span><h2>日志监控页面</h2><p>单独查看 INFO、WARN、ERROR 级别日志。</p></div><div class="hero-stats" id="heroStats"></div></section>
+        <section class="panel-grid">
+          <article class="panel panel-wide">
+            <div class="panel-header"><div><span class="panel-tag">Monitoring</span><h3>日志列表</h3></div><select id="logFilter" aria-label="日志过滤"><option value="ALL">全部等级</option><option value="INFO">INFO</option><option value="WARN">WARN</option><option value="ERROR">ERROR</option></select></div>
+            <div id="logList" class="log-list"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

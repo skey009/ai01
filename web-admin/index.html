@@ -6,191 +6,57 @@
     <title>AI 智能交易后台系统</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
+  <body data-page="overview">
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand">
-          <span class="brand-kicker">Core Module 06</span>
-          <h1>Web Admin</h1>
-          <p>AI 智能交易后台系统</p>
+          <span class="brand-kicker">Trading Console</span>
+          <h1>AI Web Admin</h1>
+          <p>市场、策略、账户与风控统一后台</p>
         </div>
         <nav class="nav-list">
-          <a href="#overview">总览</a>
-          <a href="#accounts">账户切换</a>
-          <a href="#credentials">密钥设置</a>
-          <a href="#strategy">策略开关</a>
-          <a href="#risk">风控配置</a>
-          <a href="#logs">日志监控</a>
-          <a href="#intervene">手动干预</a>
+          <a href="./index.html">总览</a>
+          <a href="./market.html">Market Data</a>
+          <a href="./signal.html">Strategy Engine</a>
+          <a href="./accounts.html">账户切换</a>
+          <a href="./credentials.html">密钥设置</a>
+          <a href="./strategy.html">策略开关</a>
+          <a href="./risk.html">风控配置</a>
+          <a href="./logs.html">日志监控</a>
+          <a href="./intervene.html">手动干预</a>
         </nav>
         <div class="sidebar-note">
-          <strong>安全约束</strong>
-          <p>当前版本只保存 API 配置并展示模拟数据，不执行真实交易。</p>
+          <strong>当前状态</strong>
+          <p>每个菜单都是独立页面，适合按模块继续扩展。</p>
         </div>
       </aside>
 
       <main class="main-content">
-        <section class="hero" id="overview">
+        <section class="hero">
           <div>
-            <span class="eyebrow">Admin Control Center</span>
-            <h2>统一管理 Binance / OKX 账户、策略与风控</h2>
-            <p>
-              支持多账户切换、API 密钥设置、余额与订单查看、策略开关、风控配置、日志监控以及手动干预操作。
-            </p>
+            <span class="eyebrow">AI Trading System</span>
+            <h2>独立页面式后台导航</h2>
+            <p>当前后台已拆分为多个菜单页面。你可以从左侧分别进入行情、策略、账户、密钥、风控和日志页面。</p>
           </div>
           <div class="hero-stats" id="heroStats"></div>
         </section>
 
         <section class="panel-grid">
-          <article class="panel" id="accounts">
+          <article class="panel">
             <div class="panel-header">
               <div>
-                <span class="panel-tag">Accounts</span>
-                <h3>多账户切换</h3>
-              </div>
-              <select id="accountSelect" aria-label="切换账户"></select>
-            </div>
-            <div class="account-card" id="accountCard"></div>
-            <div class="dual-grid">
-              <div>
-                <div class="section-head">
-                  <h4>账户余额</h4>
-                </div>
-                <div id="balanceList" class="metric-list"></div>
-              </div>
-              <div>
-                <div class="section-head">
-                  <h4>最近订单</h4>
-                </div>
-                <div id="orderList" class="order-list"></div>
+                <span class="panel-tag">Overview</span>
+                <h3>模块入口</h3>
               </div>
             </div>
-          </article>
-
-          <article class="panel" id="credentials">
-            <div class="panel-header">
-              <div>
-                <span class="panel-tag">Credentials</span>
-                <h3>交易所 API 密钥设置</h3>
-              </div>
+            <div class="metric-list">
+              <a class="metric-item page-link" href="./market.html"><strong>Market Data</strong><span>查看 K 线 / 深度 / 成交 / 实时流</span></a>
+              <a class="metric-item page-link" href="./signal.html"><strong>Strategy Engine</strong><span>查看指标、信号与 Explainable 输出</span></a>
+              <a class="metric-item page-link" href="./accounts.html"><strong>账户切换</strong><span>查看账户余额与订单</span></a>
+              <a class="metric-item page-link" href="./credentials.html"><strong>密钥设置</strong><span>配置 Binance / OKX API 密钥</span></a>
+              <a class="metric-item page-link" href="./risk.html"><strong>风控配置</strong><span>管理仓位、止损、限频等参数</span></a>
+              <a class="metric-item page-link" href="./logs.html"><strong>日志监控</strong><span>查看系统状态和操作记录</span></a>
             </div>
-            <form id="credentialsForm" class="form-grid credentials-grid">
-              <label>
-                账户名称
-                <input type="text" name="name" placeholder="例如 Binance Alpha" required />
-              </label>
-              <label>
-                负责人
-                <input type="text" name="owner" placeholder="例如 Primary Desk" required />
-              </label>
-              <label>
-                交易所
-                <select name="exchange">
-                  <option value="Binance">Binance</option>
-                  <option value="OKX">OKX</option>
-                </select>
-              </label>
-              <label>
-                健康状态
-                <input type="text" name="health" placeholder="例如 在线" required />
-              </label>
-              <label>
-                API Key
-                <input type="text" name="apiKey" placeholder="请输入 API Key" required />
-              </label>
-              <label>
-                API Secret
-                <input type="password" name="apiSecret" placeholder="请输入 API Secret" required />
-              </label>
-              <label>
-                Passphrase
-                <input type="password" name="passphrase" placeholder="OKX 可填写 Passphrase" />
-              </label>
-              <label>
-                备注
-                <input type="text" name="note" placeholder="可选，例如只读 / 交易权限" />
-              </label>
-              <button type="submit" class="primary-btn">保存密钥配置</button>
-            </form>
-            <div class="helper-copy" id="credentialsHint"></div>
-          </article>
-
-          <article class="panel" id="strategy">
-            <div class="panel-header">
-              <div>
-                <span class="panel-tag">Strategy</span>
-                <h3>策略开关</h3>
-              </div>
-            </div>
-            <div id="strategyList" class="strategy-list"></div>
-          </article>
-
-          <article class="panel" id="risk">
-            <div class="panel-header">
-              <div>
-                <span class="panel-tag">Risk</span>
-                <h3>风控配置</h3>
-              </div>
-            </div>
-            <form id="riskForm" class="form-grid">
-              <label>
-                最大仓位
-                <input type="number" step="0.1" name="positionLimit" />
-              </label>
-              <label>
-                单笔风险 %
-                <input type="number" step="0.1" name="riskPerTrade" />
-              </label>
-              <label>
-                止损 %
-                <input type="number" step="0.1" name="stopLoss" />
-              </label>
-              <label>
-                止盈 %
-                <input type="number" step="0.1" name="takeProfit" />
-              </label>
-              <label>
-                熔断阈值
-                <input type="number" step="1" name="circuitBreakerLosses" />
-              </label>
-              <label>
-                API 限频 / min
-                <input type="number" step="1" name="apiRateLimit" />
-              </label>
-              <button type="submit" class="primary-btn">保存风控配置</button>
-            </form>
-          </article>
-
-          <article class="panel" id="logs">
-            <div class="panel-header">
-              <div>
-                <span class="panel-tag">Monitoring</span>
-                <h3>日志监控</h3>
-              </div>
-              <select id="logFilter" aria-label="日志过滤">
-                <option value="ALL">全部等级</option>
-                <option value="INFO">INFO</option>
-                <option value="WARN">WARN</option>
-                <option value="ERROR">ERROR</option>
-              </select>
-            </div>
-            <div id="logList" class="log-list"></div>
-          </article>
-
-          <article class="panel panel-wide" id="intervene">
-            <div class="panel-header">
-              <div>
-                <span class="panel-tag">Intervention</span>
-                <h3>手动干预</h3>
-              </div>
-            </div>
-            <div class="intervention-grid">
-              <button class="action-btn" data-action="pause-all">暂停当前账户全部策略</button>
-              <button class="action-btn" data-action="cancel-open-orders">撤销当前账户全部挂单</button>
-              <button class="action-btn" data-action="reduce-risk">紧急下调风险参数</button>
-              <button class="action-btn" data-action="close-position">模拟强平高风险仓位</button>
-            </div>
-            <div class="timeline" id="interventionTimeline"></div>
           </article>
         </section>
       </main>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>策略开关</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="strategy">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-kicker">Controls</span><h1>策略开关</h1><p>控制策略启停</p></div>
+        <nav class="nav-list">
+          <a href="./index.html">总览</a><a href="./market.html">Market Data</a><a href="./signal.html">Strategy Engine</a><a href="./accounts.html">账户切换</a><a href="./credentials.html">密钥设置</a><a href="./strategy.html">策略开关</a><a href="./risk.html">风控配置</a><a href="./logs.html">日志监控</a><a href="./intervene.html">手动干预</a>
+        </nav>
+      </aside>
+      <main class="main-content">
+        <section class="hero"><div><span class="eyebrow">Controls</span><h2>策略开关页面</h2><p>单独管理当前账户下各策略的启停状态。</p></div><div class="hero-stats" id="heroStats"></div></section>
+        <section class="panel-grid">
+          <article class="panel panel-wide">
+            <div class="panel-header"><div><span class="panel-tag">Controls</span><h3>策略开关</h3></div><select id="accountSelect" aria-label="切换账户"></select></div>
+            <div id="strategyList" class="strategy-list"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
