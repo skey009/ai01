@@ -33,6 +33,45 @@ const marketState = {
   },
 };
 
+const executionState = {
+  orders: [
+    {
+      id: "ord-1001",
+      accountId: "binance-main",
+      symbol: "BTC/USDT",
+      side: "BUY",
+      orderType: "LIMIT",
+      quantity: 0.18,
+      price: 64120,
+      stopLoss: 2.2,
+      takeProfit: 5.2,
+      idempotencyKey: "alpha-btc-001",
+      status: "FILLED",
+      retryCount: 0,
+      lastError: "",
+      createdAt: "2026-04-21 11:20:00",
+      transitions: ["CREATED", "RISK_CHECK_PASSED", "QUEUED", "SUBMITTED", "FILLED"],
+    },
+    {
+      id: "ord-1002",
+      accountId: "okx-hedge",
+      symbol: "ETH/USDT",
+      side: "SELL",
+      orderType: "MARKET",
+      quantity: 1.2,
+      price: 3128,
+      stopLoss: 1.3,
+      takeProfit: 4.1,
+      idempotencyKey: "hedge-eth-007",
+      status: "FAILED",
+      retryCount: 1,
+      lastError: "交易所超时，等待重试",
+      createdAt: "2026-04-21 11:42:00",
+      transitions: ["CREATED", "RISK_CHECK_PASSED", "QUEUED", "SUBMITTED", "FAILED"],
+    },
+  ],
+};
+
 const wsClients = new Set();
 
 function ensureDataFile() {
@@ -137,30 +176,6 @@ function writeAccounts(data) {
   fs.writeFileSync(ACCOUNTS_FILE, JSON.stringify(data, null, 2), "utf8");
 }
 
-function maskValue(value) {
-  if (!value) {
-    return "";
-  }
-
-  if (value.length <= 8) {
-    return `${value.slice(0, 2)}***${value.slice(-1)}`;
-  }
-
-  return `${value.slice(0, 4)}****${value.slice(-4)}`;
-}
-
-function serializeAccounts(accounts) {
-  return accounts.map((account) => ({
-    ...account,
-    credentials: {
-      ...account.credentials,
-      maskedKey: maskValue(account.credentials.apiKey),
-      maskedSecret: maskValue(account.credentials.apiSecret),
-      maskedPassphrase: maskValue(account.credentials.passphrase),
-    },
-  }));
-}
-
 function json(res, statusCode, payload) {
   res.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
   res.end(JSON.stringify(payload));
@@ -169,7 +184,9 @@ function json(res, statusCode, payload) {
 function sendFile(res, filePath) {
   fs.readFile(filePath, (error, content) => {
     if (error) {
-      res.writeHead(error.code === "ENOENT" ? 404 : 500, { "Content-Type": "text/plain; charset=utf-8" });
+      res.writeHead(error.code === "ENOENT" ? 404 : 500, {
+        "Content-Type": "text/plain; charset=utf-8",
+      });
       res.end(error.code === "ENOENT" ? "404 Not Found" : "500 Internal Server Error");
       return;
     }
@@ -201,6 +218,28 @@ function readBody(req) {
     });
     req.on("error", reject);
   });
+}
+
+function maskValue(value) {
+  if (!value) {
+    return "";
+  }
+  if (value.length <= 8) {
+    return `${value.slice(0, 2)}***${value.slice(-1)}`;
+  }
+  return `${value.slice(0, 4)}****${value.slice(-4)}`;
+}
+
+function serializeAccounts(accounts) {
+  return accounts.map((account) => ({
+    ...account,
+    credentials: {
+      ...account.credentials,
+      maskedKey: maskValue(account.credentials.apiKey),
+      maskedSecret: maskValue(account.credentials.apiSecret),
+      maskedPassphrase: maskValue(account.credentials.passphrase),
+    },
+  }));
 }
 
 function formatTimeLabel(date) {
@@ -274,11 +313,9 @@ function ema(values, period) {
 
   const k = 2 / (period + 1);
   let result = values[0];
-
   for (let i = 1; i < values.length; i += 1) {
     result = values[i] * k + result * (1 - k);
   }
-
   return result;
 }
 
@@ -309,7 +346,6 @@ function rsi(values, period = 14) {
 
 function macd(values) {
   const macdSeries = [];
-
   for (let i = 26; i <= values.length; i += 1) {
     const window = values.slice(0, i);
     macdSeries.push(ema(window.slice(-12), 12) - ema(window.slice(-26), 26));
@@ -317,8 +353,19 @@ function macd(values) {
 
   const macdLine = macdSeries[macdSeries.length - 1] || 0;
   const signalLine = ema(macdSeries.slice(-9), 9);
-
   return { macdLine, signalLine };
+}
+
+function calculateSar(klines) {
+  if (klines.length < 5) {
+    return 0;
+  }
+
+  const recent = klines.slice(-5);
+  const highs = recent.map((item) => item.high);
+  const lows = recent.map((item) => item.low);
+  const trendUp = recent[recent.length - 1].close >= recent[0].close;
+  return trendUp ? Math.min(...lows) : Math.max(...highs);
 }
 
 function buildSignal() {
@@ -327,22 +374,29 @@ function buildSignal() {
   const latestVwap = latest.vwap;
   const latestRsi = rsi(closes, 14);
   const macdValue = macd(closes);
+  const sarValue = calculateSar(marketState.klines);
   const deltaFromVwap = latest.close - latestVwap;
+
   let action = "HOLD";
   let title = "等待确认";
   let confidence = 0.58;
-  let reason = "价格接近 VWAP，RSI 和 MACD 暂未形成一致方向。";
+  let reason = "价格接近 VWAP，RSI、MACD 与 SAR 暂未形成一致方向。";
 
-  if (latest.close > latestVwap && latestRsi < 68 && macdValue.macdLine > macdValue.signalLine) {
+  if (latest.close > latestVwap && latestRsi < 68 && macdValue.macdLine > macdValue.signalLine && latest.close > sarValue) {
     action = "BUY";
     title = "顺势做多";
-    confidence = 0.81;
-    reason = `价格高于 VWAP ${deltaFromVwap.toFixed(2)}，RSI 为 ${latestRsi.toFixed(2)}，MACD 上穿信号线。`;
-  } else if (latest.close < latestVwap && latestRsi > 38 && macdValue.macdLine < macdValue.signalLine) {
+    confidence = 0.84;
+    reason = `价格高于 VWAP ${deltaFromVwap.toFixed(2)}，RSI 为 ${latestRsi.toFixed(2)}，MACD 上穿信号线，SAR 位于价格下方。`;
+  } else if (
+    latest.close < latestVwap &&
+    latestRsi > 38 &&
+    macdValue.macdLine < macdValue.signalLine &&
+    latest.close < sarValue
+  ) {
     action = "SELL";
     title = "转弱减仓";
-    confidence = 0.78;
-    reason = `价格低于 VWAP ${Math.abs(deltaFromVwap).toFixed(2)}，RSI 为 ${latestRsi.toFixed(2)}，MACD 下穿信号线。`;
+    confidence = 0.8;
+    reason = `价格低于 VWAP ${Math.abs(deltaFromVwap).toFixed(2)}，RSI 为 ${latestRsi.toFixed(2)}，MACD 下穿信号线，SAR 位于价格上方。`;
   }
 
   return {
@@ -355,6 +409,7 @@ function buildSignal() {
       rsi: Number(latestRsi.toFixed(2)),
       macd: Number(macdValue.macdLine.toFixed(4)),
       macdSignal: Number(macdValue.signalLine.toFixed(4)),
+      sar: Number(sarValue.toFixed(2)),
     },
   };
 }
@@ -411,7 +466,6 @@ function createWebSocketFrame(payload) {
   if (length < 126) {
     return Buffer.concat([Buffer.from([0x81, length]), message]);
   }
-
   if (length < 65536) {
     const header = Buffer.alloc(4);
     header[0] = 0x81;
@@ -419,7 +473,6 @@ function createWebSocketFrame(payload) {
     header.writeUInt16BE(length, 2);
     return Buffer.concat([header, message]);
   }
-
   throw new Error("WebSocket payload too large");
 }
 
@@ -450,9 +503,7 @@ function handleWebSocket(req, socket) {
   socket.on("close", () => wsClients.delete(socket));
   socket.on("end", () => wsClients.delete(socket));
   socket.on("error", () => wsClients.delete(socket));
-
-  const snapshot = JSON.stringify(getMarketPayload());
-  socket.write(createWebSocketFrame(snapshot));
+  socket.write(createWebSocketFrame(JSON.stringify(getMarketPayload())));
 }
 
 function broadcastMarket() {
@@ -462,6 +513,200 @@ function broadcastMarket() {
       client.write(payload);
     }
   }
+}
+
+function getAccountById(accountId) {
+  const data = readAccounts();
+  return data.accounts.find((item) => item.id === accountId);
+}
+
+function getRiskMetrics(accountId) {
+  const account = getAccountById(accountId);
+  const lossesBase = accountId === "okx-hedge" ? 2 : 1;
+  const apiBase = accountId === "okx-hedge" ? 71 : 52;
+  return {
+    currentExposure: accountId === "okx-hedge" ? 19.6 : 22.4,
+    tradeRisk: accountId === "okx-hedge" ? 0.7 : 0.9,
+    consecutiveLosses: lossesBase,
+    apiCallsLastMinute: apiBase,
+    account,
+  };
+}
+
+function evaluateRisk(accountId, draft = {}) {
+  const metrics = getRiskMetrics(accountId);
+  const account = metrics.account;
+  const checks = [];
+  const quantity = Number(draft.quantity || 0);
+  const price = Number(draft.price || marketState.lastPrice);
+  const orderNotional = quantity * price;
+  const positionUsage = metrics.currentExposure + orderNotional / 10000;
+  const tradeRisk = Number(draft.stopLoss || account.risk.stopLoss);
+  const apiCalls = metrics.apiCallsLastMinute + (draft.includeApiCall ? 1 : 0);
+
+  checks.push({
+    key: "positionLimit",
+    label: "最大仓位限制",
+    passed: positionUsage <= account.risk.positionLimit,
+    current: Number(positionUsage.toFixed(2)),
+    limit: account.risk.positionLimit,
+  });
+  checks.push({
+    key: "riskPerTrade",
+    label: "单笔风险限制",
+    passed: tradeRisk <= account.risk.riskPerTrade,
+    current: tradeRisk,
+    limit: account.risk.riskPerTrade,
+  });
+  checks.push({
+    key: "stopLoss",
+    label: "止损限制",
+    passed: Number(draft.stopLoss || account.risk.stopLoss) <= account.risk.stopLoss,
+    current: Number(draft.stopLoss || account.risk.stopLoss),
+    limit: account.risk.stopLoss,
+  });
+  checks.push({
+    key: "takeProfit",
+    label: "止盈限制",
+    passed: Number(draft.takeProfit || account.risk.takeProfit) <= account.risk.takeProfit + 2.5,
+    current: Number(draft.takeProfit || account.risk.takeProfit),
+    limit: account.risk.takeProfit,
+  });
+  checks.push({
+    key: "circuitBreaker",
+    label: "连续亏损熔断",
+    passed: metrics.consecutiveLosses < account.risk.circuitBreakerLosses,
+    current: metrics.consecutiveLosses,
+    limit: account.risk.circuitBreakerLosses,
+  });
+  checks.push({
+    key: "apiRateLimit",
+    label: "API 调用频率限制",
+    passed: apiCalls <= account.risk.apiRateLimit,
+    current: apiCalls,
+    limit: account.risk.apiRateLimit,
+  });
+
+  return {
+    accountId,
+    allowed: checks.every((item) => item.passed),
+    checks,
+    summary: {
+      currentExposure: metrics.currentExposure,
+      projectedExposure: Number(positionUsage.toFixed(2)),
+      consecutiveLosses: metrics.consecutiveLosses,
+      apiCallsLastMinute: apiCalls,
+    },
+  };
+}
+
+function getRiskSnapshot(accountId) {
+  const account = getAccountById(accountId);
+  const evaluation = evaluateRisk(accountId, {});
+  return {
+    accountId,
+    config: account.risk,
+    evaluation,
+  };
+}
+
+function buildPortfolio(accountId) {
+  const base = accountId === "okx-hedge"
+    ? {
+        positions: [
+          { symbol: "BTC/USDT", side: "SHORT", size: 0.84, entry: 64820, mark: 64540, pnl: 235.2, pnlPct: 2.38 },
+          { symbol: "ARB/USDT", side: "LONG", size: 9200, entry: 1.08, mark: 1.12, pnl: 368, pnlPct: 3.7 },
+        ],
+        equity: 90240,
+        available: 52410,
+        unrealizedPnl: 603.2,
+      }
+    : {
+        positions: [
+          { symbol: "BTC/USDT", side: "LONG", size: 1.12, entry: 63880, mark: 64540, pnl: 739.2, pnlPct: 1.93 },
+          { symbol: "ETH/USDT", side: "LONG", size: 9.6, entry: 3094, mark: 3132, pnl: 364.8, pnlPct: 1.23 },
+          { symbol: "SOL/USDT", side: "LONG", size: 220, entry: 142.1, mark: 144.4, pnl: 506, pnlPct: 1.62 },
+        ],
+        equity: 132480,
+        available: 96210,
+        unrealizedPnl: 1610,
+      };
+
+  const curve = Array.from({ length: 12 }, (_, index) => {
+    const value = base.equity - 2100 + index * 180 + Math.round(Math.sin(index / 1.8) * 620);
+    return {
+      label: `D${index + 1}`,
+      equity: value,
+    };
+  });
+
+  return {
+    accountId,
+    summary: {
+      equity: base.equity,
+      available: base.available,
+      unrealizedPnl: base.unrealizedPnl,
+      pnlToday: Number((base.unrealizedPnl * 0.62).toFixed(2)),
+    },
+    positions: base.positions,
+    curve,
+  };
+}
+
+function createOrder(payload) {
+  const existing = executionState.orders.find((item) => item.idempotencyKey === payload.idempotencyKey);
+  if (existing) {
+    return { order: existing, idempotent: true };
+  }
+
+  const risk = evaluateRisk(payload.accountId, { ...payload, includeApiCall: true });
+  const now = new Date().toLocaleString("zh-CN", { hour12: false });
+  const failed = !risk.allowed || payload.symbol === "ETH/USDT";
+  const order = {
+    id: `ord-${1000 + executionState.orders.length + 1}`,
+    accountId: payload.accountId,
+    symbol: payload.symbol,
+    side: payload.side,
+    orderType: payload.orderType,
+    quantity: Number(payload.quantity),
+    price: Number(payload.price || marketState.lastPrice),
+    stopLoss: Number(payload.stopLoss),
+    takeProfit: Number(payload.takeProfit),
+    idempotencyKey: payload.idempotencyKey,
+    status: failed ? (risk.allowed ? "FAILED" : "REJECTED") : "FILLED",
+    retryCount: 0,
+    lastError: failed ? (risk.allowed ? "交易所返回超时，等待重试" : "RiskControl.check() 未通过") : "",
+    createdAt: now,
+    transitions: failed
+      ? risk.allowed
+        ? ["CREATED", "RISK_CHECK_PASSED", "QUEUED", "SUBMITTED", "FAILED"]
+        : ["CREATED", "RISK_CHECK_FAILED", "REJECTED"]
+      : ["CREATED", "RISK_CHECK_PASSED", "QUEUED", "SUBMITTED", "FILLED"],
+  };
+
+  executionState.orders.unshift(order);
+  return { order, idempotent: false, risk };
+}
+
+function retryOrder(orderId) {
+  const order = executionState.orders.find((item) => item.id === orderId);
+  if (!order) {
+    throw new Error("订单不存在");
+  }
+
+  if (order.status !== "FAILED") {
+    return order;
+  }
+
+  if (order.transitions.includes("RETRYING")) {
+    return order;
+  }
+
+  order.retryCount += 1;
+  order.status = "FILLED";
+  order.lastError = "";
+  order.transitions.push("RETRYING", "SUBMITTED", "FILLED");
+  return order;
 }
 
 async function handleApi(req, res) {
@@ -474,6 +719,46 @@ async function handleApi(req, res) {
 
   if (req.method === "GET" && url.pathname === "/api/market/state") {
     return json(res, 200, getMarketPayload());
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/risk/state") {
+    const accountId = url.searchParams.get("accountId") || "binance-main";
+    return json(res, 200, getRiskSnapshot(accountId));
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/risk/check") {
+    const payload = await readBody(req);
+    return json(res, 200, evaluateRisk(payload.accountId || "binance-main", { ...payload, includeApiCall: true }));
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/execution/state") {
+    const accountId = url.searchParams.get("accountId");
+    const orders = accountId ? executionState.orders.filter((item) => item.accountId === accountId) : executionState.orders;
+    return json(res, 200, { orders });
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/execution/orders") {
+    const payload = await readBody(req);
+    const required = ["accountId", "symbol", "side", "orderType", "quantity", "stopLoss", "takeProfit", "idempotencyKey"];
+    const missing = required.find((key) => !String(payload[key] ?? "").trim());
+    if (missing) {
+      return json(res, 400, { error: `缺少字段：${missing}` });
+    }
+    return json(res, 200, createOrder(payload));
+  }
+
+  const retryMatch = url.pathname.match(/^\/api\/execution\/orders\/([^/]+)\/retry$/);
+  if (req.method === "POST" && retryMatch) {
+    try {
+      return json(res, 200, { order: retryOrder(retryMatch[1]) });
+    } catch (error) {
+      return json(res, 400, { error: error.message });
+    }
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/portfolio/state") {
+    const accountId = url.searchParams.get("accountId") || "binance-main";
+    return json(res, 200, buildPortfolio(accountId));
   }
 
   const credentialsMatch = url.pathname.match(/^\/api\/accounts\/([^/]+)\/credentials$/);
@@ -539,7 +824,6 @@ server.on("upgrade", (req, socket) => {
     handleWebSocket(req, socket);
     return;
   }
-
   socket.destroy();
 });
 

@@ -241,7 +241,10 @@ input {
 .log-list,
 .timeline,
 .kline-list,
-.trade-list {
+.trade-list,
+.check-list,
+.execution-list,
+.positions-list {
   display: grid;
   gap: 12px;
   margin-top: 12px;
@@ -503,6 +506,63 @@ input {
   display: block;
   margin-top: 8px;
   font-size: 1.2rem;
+}
+
+.check-item,
+.execution-item,
+.position-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.check-item.failed {
+  border-color: rgba(166, 63, 46, 0.28);
+}
+
+.execution-actions {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.secondary-btn {
+  padding: 10px 14px;
+  border: 1px solid rgba(54, 50, 45, 0.12);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.equity-curve {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  min-height: 220px;
+  padding-top: 18px;
+}
+
+.curve-bar-wrap {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.curve-bar {
+  width: 100%;
+  max-width: 28px;
+  border-radius: 12px 12px 4px 4px;
+  background: linear-gradient(180deg, #0d6b5f, #78c2b3);
+}
+
+.danger-text {
+  color: var(--danger) !important;
 }
 
 .toast {

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="portfolio">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-kicker">Module 05</span><h1>Portfolio</h1><p>资产管理模块</p></div>
+        <nav class="nav-list">
+          <a href="./index.html">总览</a><a href="./market.html">Market Data</a><a href="./signal.html">Strategy Engine</a><a href="./risk.html">Risk Control</a><a href="./execution.html">Execution Engine</a><a href="./portfolio.html">Portfolio</a><a href="./accounts.html">账户切换</a><a href="./credentials.html">密钥设置</a><a href="./strategy.html">策略开关</a><a href="./logs.html">日志监控</a><a href="./intervene.html">手动干预</a>
+        </nav>
+      </aside>
+      <main class="main-content">
+        <section class="hero"><div><span class="eyebrow">Module 05</span><h2>资产与持仓页面</h2><p>查看持仓、PnL、可用资金和资金曲线。</p></div><div class="hero-stats" id="heroStats"></div></section>
+        <section class="panel-grid">
+          <article class="panel panel-wide">
+            <div class="panel-header"><div><span class="panel-tag">Portfolio</span><h3>资产概览</h3></div><select id="accountSelect" aria-label="切换账户"></select></div>
+            <div class="market-summary" id="portfolioSummary"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-header"><div><span class="panel-tag">Positions</span><h3>持仓</h3></div></div>
+            <div id="positionsList" class="positions-list"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-header"><div><span class="panel-tag">Equity</span><h3>资金曲线</h3></div></div>
+            <div id="equityCurve" class="equity-curve"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

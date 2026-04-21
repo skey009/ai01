@@ -12,22 +12,24 @@
         <div class="brand">
           <span class="brand-kicker">Trading Console</span>
           <h1>AI Web Admin</h1>
-          <p>市场、策略、账户与风控统一后台</p>
+          <p>市场、策略、执行、资产与风控统一后台</p>
         </div>
         <nav class="nav-list">
           <a href="./index.html">总览</a>
           <a href="./market.html">Market Data</a>
           <a href="./signal.html">Strategy Engine</a>
+          <a href="./risk.html">Risk Control</a>
+          <a href="./execution.html">Execution Engine</a>
+          <a href="./portfolio.html">Portfolio</a>
           <a href="./accounts.html">账户切换</a>
           <a href="./credentials.html">密钥设置</a>
           <a href="./strategy.html">策略开关</a>
-          <a href="./risk.html">风控配置</a>
           <a href="./logs.html">日志监控</a>
           <a href="./intervene.html">手动干预</a>
         </nav>
         <div class="sidebar-note">
           <strong>当前状态</strong>
-          <p>每个菜单都是独立页面，适合按模块继续扩展。</p>
+          <p>第 1 到第 6 个核心模块都已有对应页面，可继续逐个深化成真实业务流程。</p>
         </div>
       </aside>
 
@@ -35,14 +37,14 @@
         <section class="hero">
           <div>
             <span class="eyebrow">AI Trading System</span>
-            <h2>独立页面式后台导航</h2>
-            <p>当前后台已拆分为多个菜单页面。你可以从左侧分别进入行情、策略、账户、密钥、风控和日志页面。</p>
+            <h2>多页面模块化后台</h2>
+            <p>当前后台已经按核心模块拆分成独立页面，适合逐步接入真实交易所、风控链路、执行引擎和资产账本。</p>
           </div>
           <div class="hero-stats" id="heroStats"></div>
         </section>
 
         <section class="panel-grid">
-          <article class="panel">
+          <article class="panel panel-wide">
             <div class="panel-header">
               <div>
                 <span class="panel-tag">Overview</span>
@@ -50,12 +52,12 @@
               </div>
             </div>
             <div class="metric-list">
-              <a class="metric-item page-link" href="./market.html"><strong>Market Data</strong><span>查看 K 线 / 深度 / 成交 / 实时流</span></a>
-              <a class="metric-item page-link" href="./signal.html"><strong>Strategy Engine</strong><span>查看指标、信号与 Explainable 输出</span></a>
-              <a class="metric-item page-link" href="./accounts.html"><strong>账户切换</strong><span>查看账户余额与订单</span></a>
+              <a class="metric-item page-link" href="./market.html"><strong>Market Data</strong><span>K 线、深度、成交、WebSocket、Redis 缓存</span></a>
+              <a class="metric-item page-link" href="./signal.html"><strong>Strategy Engine</strong><span>VWAP / RSI / MACD / SAR 与 explainable signal</span></a>
+              <a class="metric-item page-link" href="./risk.html"><strong>Risk Control</strong><span>仓位、风险、止损止盈、熔断与 API 限频检查</span></a>
+              <a class="metric-item page-link" href="./execution.html"><strong>Execution Engine</strong><span>下单、状态机、失败重试与幂等键</span></a>
+              <a class="metric-item page-link" href="./portfolio.html"><strong>Portfolio</strong><span>持仓、PnL、资金曲线</span></a>
               <a class="metric-item page-link" href="./credentials.html"><strong>密钥设置</strong><span>配置 Binance / OKX API 密钥</span></a>
-              <a class="metric-item page-link" href="./risk.html"><strong>风控配置</strong><span>管理仓位、止损、限频等参数</span></a>
-              <a class="metric-item page-link" href="./logs.html"><strong>日志监控</strong><span>查看系统状态和操作记录</span></a>
             </div>
           </article>
         </section>

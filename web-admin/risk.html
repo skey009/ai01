@@ -3,22 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>风控配置</title>
+    <title>Risk Control</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body data-page="risk">
     <div class="app-shell">
       <aside class="sidebar">
-        <div class="brand"><span class="brand-kicker">Risk</span><h1>风控配置</h1><p>管理风险参数</p></div>
+        <div class="brand"><span class="brand-kicker">Module 03</span><h1>Risk Control</h1><p>最高优先级模块</p></div>
         <nav class="nav-list">
-          <a href="./index.html">总览</a><a href="./market.html">Market Data</a><a href="./signal.html">Strategy Engine</a><a href="./accounts.html">账户切换</a><a href="./credentials.html">密钥设置</a><a href="./strategy.html">策略开关</a><a href="./risk.html">风控配置</a><a href="./logs.html">日志监控</a><a href="./intervene.html">手动干预</a>
+          <a href="./index.html">总览</a><a href="./market.html">Market Data</a><a href="./signal.html">Strategy Engine</a><a href="./risk.html">Risk Control</a><a href="./execution.html">Execution Engine</a><a href="./portfolio.html">Portfolio</a><a href="./accounts.html">账户切换</a><a href="./credentials.html">密钥设置</a><a href="./strategy.html">策略开关</a><a href="./logs.html">日志监控</a><a href="./intervene.html">手动干预</a>
         </nav>
       </aside>
       <main class="main-content">
-        <section class="hero"><div><span class="eyebrow">Risk</span><h2>风控配置页面</h2><p>单独调整仓位、止损、止盈、熔断和 API 限频。</p></div><div class="hero-stats" id="heroStats"></div></section>
+        <section class="hero"><div><span class="eyebrow">Module 03</span><h2>风控检查页面</h2><p>执行 RiskControl.check()，对最大仓位、单笔风险、止损止盈、熔断和 API 限频做统一校验。</p></div><div class="hero-stats" id="heroStats"></div></section>
         <section class="panel-grid">
-          <article class="panel panel-wide">
-            <div class="panel-header"><div><span class="panel-tag">Risk</span><h3>风控参数</h3></div><select id="accountSelect" aria-label="切换账户"></select></div>
+          <article class="panel">
+            <div class="panel-header"><div><span class="panel-tag">Snapshot</span><h3>实时风控状态</h3></div><select id="accountSelect" aria-label="切换账户"></select></div>
+            <div class="market-summary" id="riskSummary"></div>
+            <div class="check-list" id="riskChecks"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-header"><div><span class="panel-tag">Check</span><h3>模拟下单前检查</h3></div></div>
+            <form id="riskCheckForm" class="form-grid">
+              <label>交易对<input type="text" name="symbol" value="BTC/USDT" /></label>
+              <label>数量<input type="number" step="0.0001" name="quantity" value="0.18" /></label>
+              <label>价格<input type="number" step="0.01" name="price" value="64500" /></label>
+              <label>止损 %<input type="number" step="0.1" name="stopLoss" value="1.8" /></label>
+              <label>止盈 %<input type="number" step="0.1" name="takeProfit" value="4.2" /></label>
+              <button type="submit" class="primary-btn">执行 RiskControl.check()</button>
+            </form>
             <form id="riskForm" class="form-grid">
               <label>最大仓位<input type="number" step="0.1" name="positionLimit" /></label>
               <label>单笔风险 %<input type="number" step="0.1" name="riskPerTrade" /></label>
