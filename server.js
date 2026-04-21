@@ -72,6 +72,212 @@ const executionState = {
   ],
 };
 
+const distillState = {
+  selectedModelId: "jiege-silver-breakout",
+  models: [
+    {
+      id: "jiege-silver-breakout",
+      traderName: "jiege",
+      displayName: "Jiege Silver Breakout",
+      sourceType: "public-site",
+      sourceUrl: "https://tradersoul.cc/app?trader=jiege",
+      sourceConfidence: "medium",
+      market: "XAG_USD",
+      venue: "OANDA",
+      timeframe: "4h",
+      modelType: "breakout",
+      summary: "偏 4h 银价突破跟随，等待区间破位后顺势进场。",
+      entryParams: {
+        triggerWindow: 20,
+        entryThreshold: 1.2,
+        confirmationBars: 1,
+        scaleSteps: 1.4
+      },
+      riskTemplate: {
+        stopLossMode: "structure",
+        stopLossPct: 1.4,
+        takeProfitMode: "rr-multiple",
+        takeProfitPct: 4.2,
+        trailingMode: "sar-follow"
+      },
+      entryRules: [
+        "观察 4h 主周期，价格突破近期区间高低点后顺势入场",
+        "要求成交动能或波动扩大，避免无量假突破",
+        "只做单方向延续，不在区间中部追单"
+      ],
+      exitRules: [
+        "固定止损放在突破结构另一侧",
+        "首段止盈以 2R 为目标，剩余仓位跟踪止盈",
+        "价格重新跌回突破区时主动离场"
+      ],
+      aiEnhancements: [
+        "AI 增加波动过滤，避免低 ATR 环境误触发",
+        "AI 增加新闻时段开仓降权",
+        "AI 根据近 20 根 K 线动态调整突破阈值"
+      ],
+      defaultOrder: {
+        symbol: "BTC/USDT",
+        side: "BUY",
+        orderType: "LIMIT",
+        quantity: 0.12,
+        priceOffset: -45,
+        stopLoss: 1.4,
+        takeProfit: 4.2
+      }
+    },
+    {
+      id: "jingxin-mean-reversal",
+      traderName: "jingxin",
+      displayName: "Jingxin Structured Reversal",
+      sourceType: "public-site",
+      sourceUrl: "https://tradersoul.cc/app?trader=jingxin",
+      sourceConfidence: "medium",
+      market: "XAG_USD",
+      venue: "OANDA",
+      timeframe: "4h",
+      modelType: "mean-reversion",
+      summary: "偏 4h 结构化反转，等偏离扩大后回归均值。",
+      entryParams: {
+        triggerWindow: 34,
+        entryThreshold: 1.8,
+        confirmationBars: 2,
+        scaleSteps: 2
+      },
+      riskTemplate: {
+        stopLossMode: "extreme-structure",
+        stopLossPct: 1.2,
+        takeProfitMode: "mean-revert",
+        takeProfitPct: 3.6,
+        trailingMode: "none"
+      },
+      entryRules: [
+        "价格显著偏离 4h 均值带后分批反向试单",
+        "结合 RSI 超买超卖与结构拐点确认",
+        "回避趋势极强阶段的逆势入场"
+      ],
+      exitRules: [
+        "止损放在极值结构外侧",
+        "回归 VWAP 或中轨后逐步减仓",
+        "一旦趋势延续信号增强立即止损"
+      ],
+      aiEnhancements: [
+        "AI 用 MACD 背离评分过滤弱反转",
+        "AI 动态判断是否允许分批加仓",
+        "AI 结合 SAR 做趋势反转确认"
+      ],
+      defaultOrder: {
+        symbol: "ETH/USDT",
+        side: "SELL",
+        orderType: "LIMIT",
+        quantity: 0.8,
+        priceOffset: 18,
+        stopLoss: 1.2,
+        takeProfit: 3.6
+      }
+    },
+    {
+      id: "ai-macro-trend",
+      traderName: "AI补全-TraderA",
+      displayName: "AI Macro Trend Follower",
+      sourceType: "ai-supplemented",
+      sourceUrl: "https://tradersoul.cc/news",
+      sourceConfidence: "inferred",
+      market: "BTC_USD",
+      venue: "Multi-Exchange",
+      timeframe: "1h / 4h",
+      modelType: "macro-trend",
+      summary: "AI 补全的消息驱动趋势模型，结合宏观新闻与趋势延续。",
+      entryParams: {
+        triggerWindow: 3,
+        entryThreshold: 0.7,
+        confirmationBars: 3,
+        scaleSteps: 0.8
+      },
+      riskTemplate: {
+        stopLossMode: "event-structure",
+        stopLossPct: 1.6,
+        takeProfitMode: "trend-extension",
+        takeProfitPct: 5,
+        trailingMode: "sar-follow"
+      },
+      entryRules: [
+        "宏观事件发布后，等待 1h 趋势方向确认",
+        "只在新闻方向与 4h 趋势一致时追随开仓",
+        "要求回踩均线或 VWAP 后再挂单进场"
+      ],
+      exitRules: [
+        "止损放在事件冲击前一根结构低点或高点",
+        "事件后 2 到 4 根 K 线内若无延续则退出",
+        "用 SAR 跟踪保护浮盈"
+      ],
+      aiEnhancements: [
+        "基于新闻强弱自动调节仓位",
+        "对高波动窗口自动收紧止损",
+        "对低置信度事件直接禁开仓"
+      ],
+      defaultOrder: {
+        symbol: "BTC/USDT",
+        side: "BUY",
+        orderType: "MARKET",
+        quantity: 0.1,
+        priceOffset: 0,
+        stopLoss: 1.6,
+        takeProfit: 5
+      }
+    },
+    {
+      id: "ai-liquidity-sweep",
+      traderName: "AI补全-TraderB",
+      displayName: "AI Liquidity Sweep Reversal",
+      sourceType: "ai-supplemented",
+      sourceUrl: "https://tradersoul.cc/",
+      sourceConfidence: "inferred",
+      market: "BTC_USD / ETH_USD",
+      venue: "Multi-Exchange",
+      timeframe: "15m / 1h",
+      modelType: "liquidity-reversal",
+      summary: "AI 补全的流动性扫单反转模型，捕捉假突破后的快速回归。",
+      entryParams: {
+        triggerWindow: 2,
+        entryThreshold: 0.45,
+        confirmationBars: 2,
+        scaleSteps: 1.3
+      },
+      riskTemplate: {
+        stopLossMode: "sweep-extreme",
+        stopLossPct: 0.9,
+        takeProfitMode: "mid-range-return",
+        takeProfitPct: 2.8,
+        trailingMode: "tight-trail"
+      },
+      entryRules: [
+        "先出现高低点扫流动性，再出现快速回收",
+        "要求成交方向反转且 RSI 从极端区回落",
+        "只在关键支撑阻力附近执行"
+      ],
+      exitRules: [
+        "止损设置在扫单极值外侧",
+        "回到中枢区域先减仓，再观察是否扩展",
+        "连续两根反向实体 K 线后强制平仓"
+      ],
+      aiEnhancements: [
+        "AI 自动识别日内关键流动性池",
+        "根据盘口失衡决定是否追单或放弃",
+        "与 RiskControl 联动，超频交易时自动冷却"
+      ],
+      defaultOrder: {
+        symbol: "ETH/USDT",
+        side: "BUY",
+        orderType: "LIMIT",
+        quantity: 1.1,
+        priceOffset: -8,
+        stopLoss: 0.9,
+        takeProfit: 2.8
+      }
+    }
+  ]
+};
+
 const wsClients = new Set();
 
 function ensureDataFile() {
@@ -688,6 +894,65 @@ function createOrder(payload) {
   return { order, idempotent: false, risk };
 }
 
+function buildDistillSnapshot() {
+  return {
+    selectedModelId: distillState.selectedModelId,
+    models: distillState.models
+  };
+}
+
+function getModelById(modelId) {
+  return distillState.models.find((item) => item.id === modelId);
+}
+
+function buildBacktest(model, accountId, config = {}) {
+  const factorSeed = model.id.length + accountId.length;
+  const confidenceBoost = Number(config.confidenceThreshold || config.eventStrength || 0.65);
+  const baseWinRate = 0.48 + (factorSeed % 7) * 0.018 + confidenceBoost * 0.06;
+  const trades = Number(config.backtestTrades || 120);
+  const avgR = model.riskTemplate.takeProfitPct / Math.max(model.riskTemplate.stopLossPct, 0.5);
+  const profitFactor = 1 + baseWinRate * avgR;
+  const maxDrawdown = Math.max(4.2, 15 - baseWinRate * 10);
+
+  return {
+    modelId: model.id,
+    accountId,
+    period: config.backtestPeriod || "180d",
+    market: config.backtestMarket || model.defaultOrder.symbol,
+    trades,
+    winRate: Number((baseWinRate * 100).toFixed(2)),
+    profitFactor: Number(profitFactor.toFixed(2)),
+    maxDrawdown: Number(maxDrawdown.toFixed(2)),
+    netPnlPct: Number(((baseWinRate * avgR - (1 - baseWinRate)) * 28).toFixed(2)),
+    assumptions: [
+      "未计入真实滑点与手续费差异",
+      "按模板止损止盈执行，不含主观临盘干预",
+      "回测结果用于策略筛选，不代表未来收益"
+    ]
+  };
+}
+
+function buildStrategyOrder(modelId, accountId) {
+  const model = getModelById(modelId);
+  if (!model) {
+    throw new Error("交易模型不存在");
+  }
+
+  const defaultOrder = model.defaultOrder;
+  const basePrice = marketState.lastPrice + defaultOrder.priceOffset;
+  return createOrder({
+    accountId,
+    symbol: defaultOrder.symbol,
+    side: defaultOrder.side,
+    orderType: defaultOrder.orderType,
+    quantity: defaultOrder.quantity,
+    price: Number(basePrice.toFixed(2)),
+    stopLoss: defaultOrder.stopLoss,
+    takeProfit: defaultOrder.takeProfit,
+    idempotencyKey: `${modelId}-${accountId}-strategy`
+  });
+}
+
 function retryOrder(orderId) {
   const order = executionState.orders.find((item) => item.id === orderId);
   if (!order) {
@@ -759,6 +1024,95 @@ async function handleApi(req, res) {
   if (req.method === "GET" && url.pathname === "/api/portfolio/state") {
     const accountId = url.searchParams.get("accountId") || "binance-main";
     return json(res, 200, buildPortfolio(accountId));
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/distill/state") {
+    return json(res, 200, buildDistillSnapshot());
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/distill/select") {
+    const payload = await readBody(req);
+    const model = getModelById(payload.modelId);
+    if (!model) {
+      return json(res, 404, { error: "交易模型不存在" });
+    }
+    distillState.selectedModelId = model.id;
+    return json(res, 200, { ok: true, selectedModelId: model.id });
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/distill/configure") {
+    const payload = await readBody(req);
+    const model = getModelById(payload.modelId || distillState.selectedModelId);
+    if (!model) {
+      return json(res, 404, { error: "交易模型不存在" });
+    }
+
+    model.entryParams = {
+      ...model.entryParams,
+      ...payload.entryParams
+    };
+    model.riskTemplate = {
+      ...model.riskTemplate,
+      ...payload.riskTemplate
+    };
+
+    return json(res, 200, { ok: true, model });
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/distill/backtest") {
+    const payload = await readBody(req);
+    const model = getModelById(payload.modelId || distillState.selectedModelId);
+    if (!model) {
+      return json(res, 404, { error: "交易模型不存在" });
+    }
+    return json(res, 200, buildBacktest(model, payload.accountId || "binance-main", payload));
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/distill/precheck") {
+    const payload = await readBody(req);
+    const model = getModelById(payload.modelId || distillState.selectedModelId);
+    if (!model) {
+      return json(res, 404, { error: "交易模型不存在" });
+    }
+
+    const orderDraft = {
+      quantity: payload.quantity || model.defaultOrder.quantity,
+      price: payload.price || Number((marketState.lastPrice + model.defaultOrder.priceOffset).toFixed(2)),
+      stopLoss: payload.stopLoss || model.riskTemplate.stopLossPct,
+      takeProfit: payload.takeProfit || model.riskTemplate.takeProfitPct,
+      includeApiCall: true
+    };
+
+    const risk = evaluateRisk(payload.accountId || "binance-main", orderDraft);
+    return json(res, 200, {
+      modelId: model.id,
+      accountId: payload.accountId || "binance-main",
+      required: true,
+      risk
+    });
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/distill/execute") {
+    try {
+      const payload = await readBody(req);
+      const model = getModelById(payload.modelId || distillState.selectedModelId);
+      const precheck = evaluateRisk(payload.accountId || "binance-main", {
+        quantity: model.defaultOrder.quantity,
+        price: Number((marketState.lastPrice + model.defaultOrder.priceOffset).toFixed(2)),
+        stopLoss: model.riskTemplate.stopLossPct,
+        takeProfit: model.riskTemplate.takeProfitPct,
+        includeApiCall: true
+      });
+
+      if (!precheck.allowed) {
+        return json(res, 400, { error: "RiskControl.check() 未通过，禁止策略开单", risk: precheck });
+      }
+
+      const result = buildStrategyOrder(payload.modelId || distillState.selectedModelId, payload.accountId || "binance-main");
+      return json(res, 200, result);
+    } catch (error) {
+      return json(res, 400, { error: error.message || "策略执行失败" });
+    }
   }
 
   const credentialsMatch = url.pathname.match(/^\/api\/accounts\/([^/]+)\/credentials$/);

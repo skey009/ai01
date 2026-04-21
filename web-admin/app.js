@@ -9,6 +9,9 @@ const state = {
   risk: null,
   execution: null,
   portfolio: null,
+  distill: null,
+  distillPrecheck: null,
+  distillBacktest: null,
   logs: [
     { level: "INFO", time: "09:00:12", message: "后台系统已启动，当前为本地实时演示模式" },
     { level: "INFO", time: "09:01:30", message: "已接入 Market Data、Strategy、Risk、Execution、Portfolio 页面" },
@@ -47,6 +50,14 @@ const refs = {
   portfolioSummary: document.getElementById("portfolioSummary"),
   positionsList: document.getElementById("positionsList"),
   equityCurve: document.getElementById("equityCurve"),
+  distillList: document.getElementById("distillList"),
+  selectedModelMeta: document.getElementById("selectedModelMeta"),
+  strategyExecutionForm: document.getElementById("strategyExecutionForm"),
+  modelConfigForm: document.getElementById("modelConfigForm"),
+  modelTemplateForm: document.getElementById("modelTemplateForm"),
+  backtestForm: document.getElementById("backtestForm"),
+  backtestResult: document.getElementById("backtestResult"),
+  precheckPanel: document.getElementById("precheckPanel"),
   toast: document.getElementById("toast"),
 };
 
@@ -145,6 +156,10 @@ async function loadExecutionState() {
 
 async function loadPortfolioState() {
   state.portfolio = await requestJson(`/api/portfolio/state?accountId=${encodeURIComponent(state.selectedAccountId)}`);
+}
+
+async function loadDistillState() {
+  state.distill = await requestJson("/api/distill/state");
 }
 
 function connectMarketStream() {
@@ -477,6 +492,113 @@ function renderPortfolio() {
   }
 }
 
+function renderDistill() {
+  if (!state.distill || !has(refs.distillList)) return;
+  refs.distillList.innerHTML = state.distill.models
+    .map(
+      (model) => `
+        <div class="distill-card ${state.distill.selectedModelId === model.id ? "selected" : ""}">
+          <div class="section-head">
+            <div>
+              <strong>${model.displayName}</strong>
+              <p>${model.summary}</p>
+            </div>
+            <span class="status-pill ${model.sourceType === "ai-supplemented" ? "warn" : ""}">${model.sourceType}</span>
+          </div>
+          <p>交易员：${model.traderName}</p>
+          <p>市场：${model.market} · 周期：${model.timeframe}</p>
+          <p>来源可信度：${model.sourceConfidence}</p>
+          <p>来源链接：<a href="${model.sourceUrl}" target="_blank" rel="noreferrer">${model.sourceUrl}</a></p>
+          <div class="distill-section"><strong>入场规则</strong>${model.entryRules.map((item) => `<p>${item}</p>`).join("")}</div>
+          <div class="distill-section"><strong>出场规则</strong>${model.exitRules.map((item) => `<p>${item}</p>`).join("")}</div>
+          <div class="distill-section"><strong>AI 补充</strong>${model.aiEnhancements.map((item) => `<p>${item}</p>`).join("")}</div>
+          <button class="primary-btn select-model-btn" data-model-id="${model.id}">${state.distill.selectedModelId === model.id ? "当前已选" : "选择该模型"}</button>
+        </div>
+      `
+    )
+    .join("");
+
+  if (has(refs.selectedModelMeta)) {
+    const model = state.distill.models.find((item) => item.id === state.distill.selectedModelId);
+    refs.selectedModelMeta.innerHTML = `
+      <div class="signal-card">
+        <span class="status-pill">${model.displayName}</span>
+        <h4>当前策略来源</h4>
+        <p>${model.summary}</p>
+        <p>默认开单：${model.defaultOrder.side} ${model.defaultOrder.symbol} · ${model.defaultOrder.orderType} · qty ${model.defaultOrder.quantity}</p>
+        <p>止损模板：${model.riskTemplate.stopLossMode} / ${model.riskTemplate.stopLossPct}%</p>
+        <p>止盈模板：${model.riskTemplate.takeProfitMode} / ${model.riskTemplate.takeProfitPct}%</p>
+      </div>
+    `;
+  }
+
+  const model = state.distill.models.find((item) => item.id === state.distill.selectedModelId);
+  if (has(refs.modelConfigForm)) {
+    Object.entries(model.entryParams).forEach(([key, value]) => {
+      if (refs.modelConfigForm.elements[key]) {
+        refs.modelConfigForm.elements[key].value = value;
+      }
+    });
+  }
+
+  if (has(refs.modelTemplateForm)) {
+    Object.entries(model.riskTemplate).forEach(([key, value]) => {
+      if (refs.modelTemplateForm.elements[key]) {
+        refs.modelTemplateForm.elements[key].value = value;
+      }
+    });
+  }
+
+  if (has(refs.precheckPanel)) {
+    if (!state.distillPrecheck) {
+      refs.precheckPanel.innerHTML = `<div class="helper-copy">执行前会强制调用 RiskControl.check()，当前还没有最近一次检查结果。</div>`;
+    } else {
+      refs.precheckPanel.innerHTML = `
+        <div class="signal-card">
+          <span class="status-pill ${state.distillPrecheck.risk.allowed ? "" : "error"}">${state.distillPrecheck.risk.allowed ? "PASS" : "BLOCK"}</span>
+          <h4>策略执行前置风控检查</h4>
+          <p>该策略单必须先通过 RiskControl.check() 才允许创建执行订单。</p>
+        </div>
+        <div class="check-list">
+          ${state.distillPrecheck.risk.checks
+            .map(
+              (check) => `
+                <div class="check-item ${check.passed ? "passed" : "failed"}">
+                  <div>
+                    <strong>${check.label}</strong>
+                    <p>当前 ${check.current} / 限制 ${check.limit}</p>
+                  </div>
+                  <span class="status-pill ${check.passed ? "" : "error"}">${check.passed ? "PASS" : "BLOCK"}</span>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+      `;
+    }
+  }
+
+  if (has(refs.backtestResult)) {
+    if (!state.distillBacktest) {
+      refs.backtestResult.innerHTML = `<div class="helper-copy">填写回测参数后可生成该模型的回测结果快照。</div>`;
+    } else {
+      refs.backtestResult.innerHTML = `
+        <div class="market-summary">
+          <div class="hero-stat"><span>周期</span><strong>${state.distillBacktest.period}</strong></div>
+          <div class="hero-stat"><span>交易次数</span><strong>${state.distillBacktest.trades}</strong></div>
+          <div class="hero-stat"><span>胜率</span><strong>${state.distillBacktest.winRate}%</strong></div>
+          <div class="hero-stat"><span>净收益</span><strong>${state.distillBacktest.netPnlPct}%</strong></div>
+        </div>
+        <div class="check-list">
+          <div class="check-item"><div><strong>Profit Factor</strong><p>${state.distillBacktest.profitFactor}</p></div></div>
+          <div class="check-item"><div><strong>Max Drawdown</strong><p>${state.distillBacktest.maxDrawdown}%</p></div></div>
+          <div class="check-item"><div><strong>回测假设</strong>${state.distillBacktest.assumptions.map((item) => `<p>${item}</p>`).join("")}</div></div>
+        </div>
+      `;
+    }
+  }
+}
+
 function renderLogs() {
   if (!has(refs.logList)) return;
   const logs = state.logFilter === "ALL" ? state.logs : state.logs.filter((item) => item.level === state.logFilter);
@@ -515,7 +637,7 @@ function statusClass(status) {
 }
 
 async function refreshAccountScopedViews() {
-  await Promise.all([loadAccounts(), loadRiskSnapshot(), loadExecutionState(), loadPortfolioState()]);
+  await Promise.all([loadAccounts(), loadRiskSnapshot(), loadExecutionState(), loadPortfolioState(), loadDistillState()]);
   renderAll();
 }
 
@@ -615,6 +737,109 @@ function attachEvents() {
     });
   }
 
+  if (has(refs.distillList)) {
+    refs.distillList.addEventListener("click", async (event) => {
+      const button = event.target.closest(".select-model-btn");
+      if (!button) return;
+      await requestJson("/api/distill/select", {
+        method: "POST",
+        body: JSON.stringify({ modelId: button.dataset.modelId })
+      });
+      await loadDistillState();
+      renderDistill();
+      pushLog("INFO", `已切换交易员蒸馏模型：${button.dataset.modelId}`);
+      showToast("策略模型已切换");
+    });
+  }
+
+  if (has(refs.strategyExecutionForm)) {
+    refs.strategyExecutionForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = Object.fromEntries(new FormData(refs.strategyExecutionForm).entries());
+      state.distillPrecheck = await requestJson("/api/distill/precheck", {
+        method: "POST",
+        body: JSON.stringify({ accountId: state.selectedAccountId, modelId: payload.modelId || state.distill.selectedModelId })
+      });
+      renderDistill();
+      if (!state.distillPrecheck.risk.allowed) {
+        pushLog("WARN", "策略执行被 RiskControl.check() 阻止");
+        showToast("前置风控未通过，禁止开单");
+        return;
+      }
+      const result = await requestJson("/api/distill/execute", {
+        method: "POST",
+        body: JSON.stringify({ accountId: state.selectedAccountId, modelId: payload.modelId || state.distill.selectedModelId })
+      });
+      await loadExecutionState();
+      renderExecution();
+      pushLog("INFO", `按交易员模型 ${result.order.idempotencyKey} 创建策略单，状态 ${result.order.status}`);
+      showToast(result.idempotent ? "已返回该模型的已有策略单" : "策略单已创建");
+    });
+  }
+
+  if (has(refs.modelConfigForm)) {
+    refs.modelConfigForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = Object.fromEntries(new FormData(refs.modelConfigForm).entries());
+      await requestJson("/api/distill/configure", {
+        method: "POST",
+        body: JSON.stringify({
+          modelId: state.distill.selectedModelId,
+          entryParams: Object.fromEntries(Object.entries(payload).map(([key, value]) => [key, Number(value)]))
+        })
+      });
+      await loadDistillState();
+      renderDistill();
+      pushLog("INFO", `已更新交易模型 ${state.distill.selectedModelId} 的入场参数`);
+      showToast("入场条件已更新");
+    });
+  }
+
+  if (has(refs.modelTemplateForm)) {
+    refs.modelTemplateForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = Object.fromEntries(new FormData(refs.modelTemplateForm).entries());
+      await requestJson("/api/distill/configure", {
+        method: "POST",
+        body: JSON.stringify({
+          modelId: state.distill.selectedModelId,
+          riskTemplate: {
+            stopLossMode: payload.stopLossMode,
+            stopLossPct: Number(payload.stopLossPct),
+            takeProfitMode: payload.takeProfitMode,
+            takeProfitPct: Number(payload.takeProfitPct),
+            trailingMode: payload.trailingMode
+          }
+        })
+      });
+      await loadDistillState();
+      renderDistill();
+      pushLog("INFO", `已更新交易模型 ${state.distill.selectedModelId} 的止盈止损模板`);
+      showToast("止盈止损模板已更新");
+    });
+  }
+
+  if (has(refs.backtestForm)) {
+    refs.backtestForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = Object.fromEntries(new FormData(refs.backtestForm).entries());
+      state.distillBacktest = await requestJson("/api/distill/backtest", {
+        method: "POST",
+        body: JSON.stringify({
+          modelId: state.distill.selectedModelId,
+          accountId: state.selectedAccountId,
+          backtestPeriod: payload.backtestPeriod,
+          backtestMarket: payload.backtestMarket,
+          backtestTrades: Number(payload.backtestTrades),
+          confidenceThreshold: Number(payload.confidenceThreshold || 0)
+        })
+      });
+      renderDistill();
+      pushLog("INFO", `已生成模型 ${state.distill.selectedModelId} 的回测快照`);
+      showToast("回测结果已生成");
+    });
+  }
+
   if (has(refs.logFilter)) {
     refs.logFilter.addEventListener("change", (event) => {
       state.logFilter = event.target.value;
@@ -651,13 +876,14 @@ function renderAll() {
   renderRiskPanel();
   renderExecution();
   renderPortfolio();
+  renderDistill();
   renderLogs();
   renderInterventions();
 }
 
 async function bootstrap() {
   try {
-    await Promise.all([loadAccounts(), loadMarketSnapshot(), loadRiskSnapshot(), loadExecutionState(), loadPortfolioState()]);
+    await Promise.all([loadAccounts(), loadMarketSnapshot(), loadRiskSnapshot(), loadExecutionState(), loadPortfolioState(), loadDistillState()]);
     renderAll();
     attachEvents();
     connectMarketStream();

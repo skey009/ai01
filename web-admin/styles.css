@@ -244,7 +244,8 @@ input {
 .trade-list,
 .check-list,
 .execution-list,
-.positions-list {
+.positions-list,
+.distill-list {
   display: grid;
   gap: 12px;
   margin-top: 12px;
@@ -563,6 +564,27 @@ input {
 
 .danger-text {
   color: var(--danger) !important;
+}
+
+.distill-card {
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.distill-card.selected {
+  border-color: rgba(13, 107, 95, 0.38);
+  box-shadow: 0 16px 24px rgba(13, 107, 95, 0.08);
+}
+
+.distill-section {
+  margin-top: 12px;
+}
+
+.distill-section p {
+  margin: 6px 0 0;
+  color: var(--muted);
 }
 
 .toast {

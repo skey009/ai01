@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>顶级交易员蒸馏</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="distill">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-kicker">Module 07</span><h1>顶级交易员蒸馏</h1><p>4 个交易模型</p></div>
+        <nav class="nav-list">
+          <a href="./index.html">总览</a>
+          <a href="./market.html">Market Data</a>
+          <a href="./signal.html">Strategy Engine</a>
+          <a href="./risk.html">Risk Control</a>
+          <a href="./execution.html">Execution Engine</a>
+          <a href="./portfolio.html">Portfolio</a>
+          <a href="./distill.html">顶级交易员蒸馏</a>
+          <a href="./accounts.html">账户切换</a>
+          <a href="./credentials.html">密钥设置</a>
+          <a href="./strategy.html">策略开关</a>
+          <a href="./logs.html">日志监控</a>
+          <a href="./intervene.html">手动干预</a>
+        </nav>
+      </aside>
+      <main class="main-content">
+        <section class="hero">
+          <div>
+            <span class="eyebrow">Module 07</span>
+            <h2>交易员系统蒸馏与策略开单</h2>
+            <p>基于 Tradersoul 公开可见页面先蒸馏 2 个真实可见 trader 模型，再用 AI 补全 2 个可执行模型。页面内会标注来源可信度。</p>
+          </div>
+          <div class="hero-stats" id="heroStats"></div>
+        </section>
+
+        <section class="panel-grid">
+          <article class="panel panel-wide">
+            <div class="panel-header">
+              <div><span class="panel-tag">Models</span><h3>4 个交易模型</h3></div>
+              <select id="accountSelect" aria-label="切换账户"></select>
+            </div>
+            <div id="selectedModelMeta"></div>
+            <div id="distillList" class="distill-list"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header"><div><span class="panel-tag">Execute</span><h3>按交易员模型开单</h3></div></div>
+            <form id="strategyExecutionForm" class="form-grid">
+              <label>
+                模型 ID
+                <input type="text" name="modelId" placeholder="留空则使用当前已选模型" />
+              </label>
+              <button type="submit" class="primary-btn">执行策略单</button>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header"><div><span class="panel-tag">Entry Params</span><h3>入场条件参数化</h3></div></div>
+            <form id="modelConfigForm" class="form-grid">
+              <label>触发窗口<input type="number" step="0.01" name="triggerWindow" /></label>
+              <label>入场阈值<input type="number" step="0.01" name="entryThreshold" /></label>
+              <label>参数 3<input type="number" step="0.01" name="confirmationBars" /></label>
+              <label>分层/倍率<input type="number" step="0.01" name="scaleSteps" /></label>
+              <button type="submit" class="primary-btn">保存入场参数</button>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header"><div><span class="panel-tag">Risk Template</span><h3>止损止盈模板</h3></div></div>
+            <form id="modelTemplateForm" class="form-grid">
+              <label>止损模式<input type="text" name="stopLossMode" /></label>
+              <label>止损 %<input type="number" step="0.1" name="stopLossPct" /></label>
+              <label>止盈模式<input type="text" name="takeProfitMode" /></label>
+              <label>止盈 %<input type="number" step="0.1" name="takeProfitPct" /></label>
+              <label>跟踪模板<input type="text" name="trailingMode" /></label>
+              <button type="submit" class="primary-btn">保存止盈止损模板</button>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header"><div><span class="panel-tag">Backtest</span><h3>回测参数面板</h3></div></div>
+            <form id="backtestForm" class="form-grid">
+              <label>回测周期<input type="text" name="backtestPeriod" value="180d" /></label>
+              <label>回测市场<input type="text" name="backtestMarket" value="BTC/USDT" /></label>
+              <label>样本交易数<input type="number" step="1" name="backtestTrades" value="120" /></label>
+              <label>置信度阈值<input type="number" step="0.01" name="confidenceThreshold" value="0.68" /></label>
+              <button type="submit" class="primary-btn">生成回测结果</button>
+            </form>
+            <div id="backtestResult"></div>
+          </article>
+
+          <article class="panel panel-wide">
+            <div class="panel-header"><div><span class="panel-tag">Risk Gate</span><h3>与 Risk Control 的强制前置联动</h3></div></div>
+            <div id="precheckPanel"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header"><div><span class="panel-tag">Notes</span><h3>实现说明</h3></div></div>
+            <div class="helper-copy">
+              <p>今天站点主页显示“当前没有可展示的公开实盘”。</p>
+              <p>搜索引擎当前仅能稳定看到 `jiege` 与 `jingxin` 两个 trader 页面。</p>
+              <p>因此其余 2 个模型明确标记为 `ai-supplemented`，用于把后台流程先跑通。</p>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
